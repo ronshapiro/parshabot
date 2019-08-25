@@ -72,7 +72,10 @@ var splitVerse = function(verse) {
   if (verse.length <= 280) {
     return [verse];
   }
-  var split = splitOnLast(verse, ",") || splitOnLast(verse, ":");
+  var split =
+      splitOnLast(verse, ",") ||
+      splitOnLast(verse, ":") ||
+      splitOnLast(verse, "׀");
   if (split) {
     return split;
   }
@@ -82,7 +85,7 @@ var splitVerse = function(verse) {
 var tanach = require("./tanach.js");
 
 ["Deuteronomy", "Exodus", "Genesis", "Leviticus", "Numbers"].forEach(book => {
-  tanach.getEnglish(book).text.forEach(chapter => {
+  tanach.getHebrew(book).text.forEach(chapter => {
     chapter.forEach(verse => {
       if (verse.length > 280) {
         var first = true;
