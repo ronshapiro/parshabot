@@ -1,16 +1,22 @@
 var fs = require('fs');
 
-var loadBook = function(name) {
-  return JSON.parse(fs.readFileSync("sefaria-data/books/" + name + ".json"));
+var loadBook = function(folder, name) {
+  return JSON.parse(fs.readFileSync("sefaria-data/" + folder + "/" + name + ".json"));
 }
 
-var tanach = {}
+var tanach = {
+  english: {},
+  hebrew: {}
+}
 
-module.exports.get = function(name) {
-  if (!tanach[name]) {
-    tanach[name] = loadBook(name);
+var createGet = function(lang) {
+  return function(name) {
+    if (!tanach[lang][name]) {
+      tanach[lang][name] = loadBook("books-" + lang, name);
+    }
+    return tanach[lang][name];
   }
-  return tanach[name];
 }
 
-
+module.exports.getEnglish = createGet("english")
+module.exports.getHebrew = createGet("hebrew")

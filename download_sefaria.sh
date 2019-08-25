@@ -31,7 +31,7 @@ cd ..
 ########################
 ########################
 
-mkdir_cd books
+mkdir_cd books-english
 
 for book in ${BOOKS[@]}; do
     wget -q -O ${book}.json "${PREFIX}/json/Tanakh/Torah/${book}/English/The%20Koren%20Jerusalem%20Bible.json"
@@ -43,7 +43,7 @@ cd ..
 ########################
 ########################
 
-mkdir_cd books-he
+mkdir_cd books-hebrew
 
 for book in ${BOOKS[@]}; do
     wget -q -O ${book}.json "${PREFIX}/json/Tanakh/Torah/${book}/Hebrew/Tanach%20with%20Ta'amei%20Hamikra.json"

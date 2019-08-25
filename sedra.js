@@ -69,7 +69,7 @@ var forEachVerse = function(aliya, receiver) {
   for (var currentChapter = aliya.startChapter;
        currentChapter <= aliya.lastChapter;
        currentChapter++) {
-    var chapterText = tanach.get(aliya.book).text[currentChapter - 1];
+    var chapterText = tanach.getHebrew(aliya.book).text[currentChapter - 1];
     var lastVerseIndex =
         currentChapter === aliya.lastChapter ? aliya.lastVerse : chapterText.length;
     chapterText.slice(currentVerse - 1, lastVerseIndex).forEach(receiver);
