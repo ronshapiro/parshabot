@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "luxon": "^1.17.2",
     "twit": "^2.2.11",
     "xml2js": "^0.4.19"
   }
