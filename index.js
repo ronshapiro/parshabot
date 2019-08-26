@@ -24,6 +24,7 @@ function dayOfWeekAsInt(timezone) {
 
 var realTweeter = initializeTwitter();
 
+/*
 sedra.requestAliyotPerDay(
   // 281184 = Jerusalem
   // 5128581 = NYC
@@ -37,3 +38,6 @@ sedra.requestAliyotPerDay(
     var dayIndex = dayOfWeekAsInt(timezones.israel);
     aliyotPerDay[dayIndex].forEach(aliya => realTweeter(aliya, HEBREW));
   });
+*/
+var count = 0;
+setInterval(() => console.log("ping " + count++), 10000);
