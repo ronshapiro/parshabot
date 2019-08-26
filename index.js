@@ -41,3 +41,9 @@ sedra.requestAliyotPerDay(
 */
 var count = 0;
 setInterval(() => console.log("ping " + count++), 10000);
+
+if (process.env.on_heroku) {
+  var express_app = require("express")();
+  express_app.get("/", (req, res) => res.send("@ParshaBot"));
+  express_app.listen(process.env.PORT, () => console.log("Listening on port: " + process.env.PORT));
+}
