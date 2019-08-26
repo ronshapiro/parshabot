@@ -11,8 +11,16 @@ function requiredGet(obj, key) {
   throw key + " not found in " + obj;
 }
 
+function loadSecrets() {
+  if (process.env.parshabot_use_secret_from_env) {
+    return process.env;
+  }
+
+  return JSON.parse(fs.readFileSync('secrets.json'))
+}
+
 function options() {
-  var secrets = JSON.parse(fs.readFileSync('secrets.json'))
+  var secrets = loadSecrets();
 
   var twitOptions = {}
   // copy the options to make sure that they're all available, and nothing else is present
