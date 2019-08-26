@@ -22,7 +22,7 @@ function dayOfWeekAsInt(timezone) {
   return asInt;
 }
 
-var twitterApi = initializeTwitter();
+var realTweeter = initializeTwitter();
 
 sedra.requestAliyotPerDay(
   // 281184 = Jerusalem
@@ -35,5 +35,5 @@ sedra.requestAliyotPerDay(
     }
 
     var dayIndex = dayOfWeekAsInt(timezones.israel);
-    aliyotPerDay[dayIndex].forEach(aliya => consoleTweeter(aliya, HEBREW));
+    aliyotPerDay[dayIndex].forEach(aliya => realTweeter(aliya, HEBREW));
   });

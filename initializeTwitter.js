@@ -1,5 +1,8 @@
-var Twit = require('twit');
 var fs = require('fs');
+var {HEBREW, ENGLISH} = require("./languages.js");
+var sedra = require('./sedra.js');
+var splitVerse = require('./splitVerse.js');
+var Twit = require('twit');
 
 function requiredGet(obj, key) {
   if (obj.hasOwnProperty(key)) {
@@ -24,5 +27,67 @@ function options() {
   return twitOptions;
 }
 
-module.exports = () => new Twit(options());
+var chainAppend = function(previous, text) {
+  if (Object.keys(previous).length === 0) {
+    previous.text = text;
+    return previous;
+  }
+  previous.next = {text: text};
+  previous = previous.next;
+  return previous;
+};
 
+
+var buildTweetChain = function(aliya, lang) {
+  var chain = {};
+  var previous = chain;
+
+  var hebrewVerses = [];
+  var englishVerses = [];
+  sedra.forEachVerse(aliya, HEBREW, verse => hebrewVerses.push(verse));
+  sedra.forEachVerse(aliya, ENGLISH, verse => englishVerses.push(verse));
+
+  for (var i = 0; i < hebrewVerses.length; i++) {
+    var hebrewSplits = splitVerse(hebrewVerses[i]);
+    var firstHebrew = chainAppend(previous, hebrewSplits[0]);
+    previous = firstHebrew;
+    for (var j = 1; j < hebrewSplits.length; j++) {
+      previous = chainAppend(previous, hebrewSplits[j]);
+    }
+
+    var englishSplits = splitVerse(englishVerses[i]);
+    var englishPrevious = firstHebrew.english = {};
+    for (var j = 0; j < englishSplits.length; j++) {
+      englishPrevious = chainAppend(englishPrevious, englishSplits[j]);
+    }
+  }
+  return chain;
+}
+
+
+// TODO: give this file a better name (perhaps createRealTweeter.js)
+module.exports = function() {
+  twitterApi = new Twit(options());
+
+  var newTweet = function(tweet, lastTweetId) {
+    if (tweet === undefined) {
+      return;
+    }
+    var parameters = {status: tweet.text};
+    if (lastTweetId) {
+      parameters["in_reply_to_status_id"] = lastTweetId;
+      parameters["auto_populate_reply_metadata"] = true;
+    }
+    twitterApi.post('statuses/update', parameters, function(error, data, response) {
+      // TODO: confirm that this tweet succeeded. If not, exponential backoff
+      console.log(data);
+      newTweet(tweet.next, data.id_str);
+      newTweet(tweet.english, data.id_str);
+    });
+  };
+
+  return function(aliya, lang) {
+    var tweetChain = buildTweetChain(aliya, lang);
+    newTweet(tweetChain);
+  };
+}
