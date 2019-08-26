@@ -1,7 +1,9 @@
 var parseXml = require('xml2js').parseString;
 var request = require('request');
+var {HEBREW, ENGLISH} = require("./languages.js");
 var tanach = require("./tanach.js");
 var mathjs = require("mathjs");
+// TODO: sort imports
 
 var requestSedra = function(url, callback) {
   request(
@@ -11,14 +13,14 @@ var requestSedra = function(url, callback) {
         callback(error, null);
         return;
       }
-      
+
       try {
         callback(null, JSON.parse(body));
       } catch (jsonError) {
         callback(jsonError, null);
       }
     }
-  );   
+  );
 }
 
 // Deuteronomy 12:15 - 14:3
@@ -64,12 +66,12 @@ var requestAliyot = function(url, callback) {
     });
 }
 
-var forEachVerse = function(aliya, receiver) {
+var forEachVerse = function(aliya, lang, receiver) {
   var currentVerse = aliya.startVerse;
   for (var currentChapter = aliya.startChapter;
        currentChapter <= aliya.lastChapter;
        currentChapter++) {
-    var chapterText = tanach.getHebrew(aliya.book).text[currentChapter - 1];
+    var chapterText = tanach.get(aliya.book, lang).text[currentChapter - 1];
     var lastVerseIndex =
         currentChapter === aliya.lastChapter ? aliya.lastVerse : chapterText.length;
     chapterText.slice(currentVerse - 1, lastVerseIndex).forEach(receiver);
@@ -82,7 +84,7 @@ var countVersesPerAliya = function(aliyot) {
   for (var k in aliyot) {
     var aliya = aliyot[k];
     var counter = 0;
-    forEachVerse(aliya, verse => counter++);
+    forEachVerse(aliya, HEBREW, verse => counter++);
     output[k] = counter;
   }
   return output;

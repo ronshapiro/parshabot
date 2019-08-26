@@ -1,4 +1,5 @@
 var fs = require('fs');
+var {HEBREW, ENGLISH} = require("./languages.js");
 
 var loadBook = function(folder, name) {
   return JSON.parse(fs.readFileSync("sefaria-data/" + folder + "/" + name + ".json"));
@@ -9,14 +10,18 @@ var tanach = {
   hebrew: {}
 }
 
-var createGet = function(lang) {
-  return function(name) {
-    if (!tanach[lang][name]) {
-      tanach[lang][name] = loadBook("books-" + lang, name);
-    }
-    return tanach[lang][name];
+module.exports.get = function(name, lang) {
+  var id;
+  if (lang == HEBREW) {
+    id = "hebrew";
+  } else if (lang == ENGLISH) {
+    id = "english";
+  } else {
+    throw "Unknown language: " + lang;
   }
-}
 
-module.exports.getEnglish = createGet("english")
-module.exports.getHebrew = createGet("hebrew")
+  if (!tanach[id][name]) {
+    tanach[id][name] = loadBook("books-" + id, name);
+  }
+  return tanach[id][name];
+}
