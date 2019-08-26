@@ -26,7 +26,7 @@ var requestSedra = function(url, callback) {
 // Deuteronomy 12:15 - 14:3
 var aliyaPattern = /(.*) (\d{1,3}):(\d{1,3}) - (\d{1,3}):(\d{1,3})/;
 
-function extractAliyaData(aliya) {
+function extractAliyaData(aliya, aliyaNumber) {
   var matches = aliya.match(aliyaPattern)
   return {
     book: matches[1],
@@ -34,18 +34,19 @@ function extractAliyaData(aliya) {
     startVerse: parseInt(matches[3]),
     lastChapter: parseInt(matches[4]),
     lastVerse: parseInt(matches[5]),
+    aliyaNumber: aliyaNumber,
   };
 }
 
 function extractAliyotData(aliyot) {
   return {
-    1: extractAliyaData(aliyot["1"]),
-    2: extractAliyaData(aliyot["2"]),
-    3: extractAliyaData(aliyot["3"]),
-    4: extractAliyaData(aliyot["4"]),
-    5: extractAliyaData(aliyot["5"]),
-    6: extractAliyaData(aliyot["6"]),
-    7: extractAliyaData(aliyot["7"]),
+    1: extractAliyaData(aliyot["1"], 1),
+    2: extractAliyaData(aliyot["2"], 2),
+    3: extractAliyaData(aliyot["3"], 3),
+    4: extractAliyaData(aliyot["4"], 4),
+    5: extractAliyaData(aliyot["5"], 5),
+    6: extractAliyaData(aliyot["6"], 6),
+    7: extractAliyaData(aliyot["7"], 7),
   }
 }
 
@@ -60,7 +61,13 @@ var requestAliyot = function(url, callback) {
 
       json.items.forEach(item => {
         if (item.category === "parashat") {
-          callback(null, extractAliyotData(item.leyning));
+          callback(null, {
+            aliyot: extractAliyotData(item.leyning),
+            parsha: {
+              hebrew: item.hebrew,
+              english: item.title,
+            },
+          });
         }
       });
     });
@@ -132,11 +139,12 @@ var computeAliyotPerDay = function(aliyot) {
 }
 
 var requestAliyotPerDay = function(url, callback) {
-  requestAliyot(url, function(error, aliyot) {
+  requestAliyot(url, function(error, data) {
     if (error) {
       callback(error, null);
     } else {
-      callback(null, computeAliyotPerDay(aliyot));
+      data.aliyotPerDay = computeAliyotPerDay(data.aliyot);
+      callback(null, data);
     }
   });
 }

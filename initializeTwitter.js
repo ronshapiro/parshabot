@@ -3,6 +3,7 @@ var {HEBREW, ENGLISH} = require("./languages.js");
 var sedra = require('./sedra.js');
 var splitVerse = require('./splitVerse.js');
 var Twit = require('twit');
+var {DateTime} = require("luxon");
 
 function requiredGet(obj, key) {
   if (obj.hasOwnProperty(key)) {
@@ -45,9 +46,22 @@ var chainAppend = function(previous, text) {
   return previous;
 };
 
+var aliyaNumberToHebrew = {
+  1: "ראשון",
+  2: "שני",
+  3: "שלישי",
+  4: "רביעי",
+  5: "חמישי",
+  6: "שישי",
+  7: "שביעי",
+}
 
-var buildTweetChain = function(aliya, lang) {
-  var chain = {};
+var formatAliyaHeader = function(aliya, parsha) {
+  return parsha.hebrew + " | " + parsha.english + "\n" + aliyaNumberToHebrew[aliya.aliyaNumber];
+}
+
+var buildTweetChain = function(aliya, parsha, lang) {
+  var chain = {text: formatAliyaHeader(aliya, parsha)};
   var previous = chain;
 
   var hebrewVerses = [];
@@ -94,8 +108,27 @@ module.exports = function() {
     });
   };
 
-  return function(aliya, lang) {
-    var tweetChain = buildTweetChain(aliya, lang);
-    newTweet(tweetChain);
+  return {
+    ifAliyaHasNotBeenTweeted: function(aliya, parsha, callback) {
+      // A rough estimate for a recency of when to search. Should be more than enough
+      var twoWeeksAgo = DateTime.utc().minus({weeks: 2});
+      twitterApi.get(
+        "search/tweets",
+        {q: '"' + formatAliyaHeader(aliya, parsha) + '"'
+         + " from:parshabot since:" + twoWeeksAgo.toFormat("yyyy-LL-dd")},
+        function(error, data, response) {
+          if (error) {
+            console.log(error);
+          } else if (data.statuses.length > 0) {
+            console.log("Already tweeted: " + data.statuses[0].text);
+          } else {
+            callback();
+          }
+        });
+    },
+    tweetAliya: function(aliya, parsha, lang) {
+      var tweetChain = buildTweetChain(aliya, parsha, lang);
+      newTweet(tweetChain);
+    },
   };
 }
