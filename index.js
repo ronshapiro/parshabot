@@ -58,7 +58,7 @@ var tweetIfNecessary = function() {
     });
 };
 
-setInterval(tweetIfNecessary, Duration.fromObject({hours: 1}).as("milliseconds").milliseconds);
+setInterval(tweetIfNecessary, Duration.fromObject({hours: 1}).as("milliseconds"));
 
 if (process.env.on_heroku) {
   var express_app = require("express")();
