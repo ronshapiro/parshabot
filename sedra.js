@@ -17,6 +17,7 @@ var requestSedra = function(url, callback) {
       try {
         callback(null, JSON.parse(body));
       } catch (jsonError) {
+        console.log("Error parsing: " + body);
         callback(jsonError, null);
       }
     }

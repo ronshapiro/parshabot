@@ -40,6 +40,7 @@ var tweetIfNecessary = function() {
     function(error, data) {
       if (error) {
         console.log(error);
+        return;
       }
 
       var dayIndex = dayOfWeekAsInt(timezones.israel);
