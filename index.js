@@ -1,6 +1,6 @@
 var sedra = require("./sedra.js");
 var initializeTwitter = require("./initializeTwitter.js");
-var {DateTime, IANAZone} = require("luxon");
+var {DateTime, Duration, IANAZone} = require("luxon");
 var splitVerse = require("./splitVerse.js");
 var {HEBREW, ENGLISH} = require("./languages.js");
 var consoleTweeter = require('./consoleTweeter');
@@ -57,7 +57,7 @@ var tweetIfNecessary = function() {
     });
 };
 
-setInterval(tweetIfNecessary, 60 * 1000);
+setInterval(tweetIfNecessary, Duration.fromObject({hours: 1}).as("milliseconds").milliseconds);
 
 if (process.env.on_heroku) {
   var express_app = require("express")();
