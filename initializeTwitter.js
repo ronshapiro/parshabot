@@ -87,7 +87,7 @@ var buildTweetChain = function(aliya, parsha, lang) {
 }
 
 
-// TODO: give this file a better name (perhaps createRealTweeter.js)
+// TODO: give this file a better name (perhaps twitterClient.js)
 module.exports = function() {
   twitterApi = new Twit(options());
 

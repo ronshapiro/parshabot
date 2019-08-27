@@ -25,37 +25,53 @@ function dayOfWeekAsInt(timezone) {
 
 var realTweeter = initializeTwitter();
 
-sedra.requestAliyotPerDay(
-  // 281184 = Jerusalem
-  // 5128581 = NYC
-  // TODO: make a locations object
-  "https://www.hebcal.com/shabbat/?cfg=json&geonameid=281184&m=0&a=off",
-  function(error, data) {
-    if (error) {
-      console.log(error);
-    }
+var tweetIfNecessary = function() {
+  if (DateTime.utc().setZone(timezones.israel).hour < 15) {
+    // Don't tweet before 3pm in Israel, which is 8am in NYC, or 5am in Los Angeles.
+    // This seems like a happy medium
+    return;
+  }
 
-    var dayIndex = dayOfWeekAsInt(timezones.israel);
+  sedra.requestAliyotPerDay(
+    // 281184 = Jerusalem
+    // 5128581 = NYC
+    // TODO: make a locations object
+    "https://www.hebcal.com/shabbat/?cfg=json&geonameid=281184&m=0&a=off",
+    function(error, data) {
+      if (error) {
+        console.log(error);
+      }
 
-    data.aliyotPerDay[dayIndex].forEach(aliya => {
-      realTweeter.ifAliyaHasNotBeenTweeted(aliya, data.parsha, () => {
-        realTweeter.tweetAliya(aliya, data.parsha, HEBREW)
+      var dayIndex = dayOfWeekAsInt(timezones.israel);
+      var aliyot = data.aliyotPerDay[dayIndex];
+
+      if (!aliyot) {
+        // i.e. Shabbat, or Chag
+      }
+
+      aliyot.forEach(aliya => {
+        realTweeter.ifAliyaHasNotBeenTweeted(aliya, data.parsha, () => {
+          realTweeter.tweetAliya(aliya, data.parsha, HEBREW)
+        });
       });
     });
-  });
+};
 
+setInterval(tweetIfNecessary, 60 * 1000);
 
 if (process.env.on_heroku) {
   var express_app = require("express")();
   express_app.get("/", (req, res) => res.send("@ParshaBot"));
   express_app.listen(process.env.PORT, () => console.log("Listening on port: " + process.env.PORT));
 
-  var count = 0;
   setInterval(() => {
-    request("https://parshabot-ronsh.herokuapp.com", function(error, response, body) {
-      console.log("ping " + count++ + ": " + body);
-    });
-  }, 10000);
+    // Ping ourselves repeatedly so that Heroku never shuts us down. That way no external cron job
+    // is necessary.
+    // TODO: check to make sure this works even after dynos restart. If not, then instead perhaps
+    // Google Apps Script's UrlFetchApp.fetch() is a decent way to set up a cron to ping this server
+    request("https://parshabot-ronsh.herokuapp.com", () => {});
+  }, 30 * 1000);
 }
 
 // TODO: rename to WeeklyTorah
+// TODO: don't tweet on YomTov https://www.hebcal.com/home/195/jewish-calendar-rest-api
