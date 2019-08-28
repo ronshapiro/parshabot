@@ -73,7 +73,7 @@ if (process.env.on_heroku) {
     setTimeout(tweetIfNecessary, Duration.fromObject({seconds: 3}).as("milliseconds"));
     res.send("Received");
   });
-  express_app.listen(process.env.PORT, () => console.log("Listening on port: " + process.env.PORT));
+  express_app.listen(process.env.PORT, () => {});
 }
 
 // TODO: rename to WeeklyTorah
