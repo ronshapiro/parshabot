@@ -26,9 +26,11 @@ function dayOfWeekAsInt(timezone) {
 var realTweeter = initializeTwitter();
 
 var tweetIfNecessary = function() {
-  if (DateTime.utc().setZone(timezones.israel).hour < 15) {
+  var timeInIsrael = DateTime.utc().setZone(timezones.israel);
+  if (timeInIsrael.hour < 15) {
     // Don't tweet before 3pm in Israel, which is 8am in NYC, or 5am in Los Angeles.
     // This seems like a happy medium
+    console.log("Not tweeting at: " + timeInIsrael.toRFC2822());
     return;
   }
 
@@ -48,6 +50,8 @@ var tweetIfNecessary = function() {
 
       if (!aliyot) {
         // i.e. Shabbat, or Chag
+        console.log("No aliyot, not tweeting");
+        return;
       }
 
       aliyot.forEach(aliya => {
@@ -58,20 +62,18 @@ var tweetIfNecessary = function() {
     });
 };
 
-setInterval(tweetIfNecessary, Duration.fromObject({hours: 1}).as("milliseconds"));
-
 if (process.env.on_heroku) {
   var express_app = require("express")();
   express_app.get("/", (req, res) => res.send("@ParshaBot"));
+  // Note: an external service is necessary to ping this periodically. Alternatively, we could
+  // use setInterval() here and manage our own timing, but on Heroku, dynos may be shutdown if they
+  // sit idle. Frequently pinging ourselves seemed like a viable option, but that seems wasteful of
+  // their resources.
+  express_app.get("/tweet_if_necessary", (req, res) => {
+    setTimeout(tweetIfNecessary, Duration.fromObject({seconds: 3}).as("milliseconds"));
+    res.send("Received");
+  });
   express_app.listen(process.env.PORT, () => console.log("Listening on port: " + process.env.PORT));
-
-  setInterval(() => {
-    // Ping ourselves repeatedly so that Heroku never shuts us down. That way no external cron job
-    // is necessary.
-    // TODO: check to make sure this works even after dynos restart. If not, then instead perhaps
-    // Google Apps Script's UrlFetchApp.fetch() is a decent way to set up a cron to ping this server
-    request("https://parshabot-ronsh.herokuapp.com", () => {});
-  }, 30 * 1000);
 }
 
 // TODO: rename to WeeklyTorah
