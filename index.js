@@ -41,7 +41,7 @@ var tweetIfNecessary = function() {
     "https://www.hebcal.com/shabbat/?cfg=json&geonameid=281184&m=0&a=off",
     function(error, data) {
       if (error) {
-        console.log(error);
+        console.error(error);
         return;
       }
 

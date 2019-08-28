@@ -102,9 +102,18 @@ module.exports = function() {
     }
     twitterApi.post('statuses/update', parameters, function(error, data, response) {
       // TODO: confirm that this tweet succeeded. If not, exponential backoff
-      console.log(data);
+      if (error) {
+        console.error(error);
+      } else {
+        console.log(data);
+      }
+
       newTweet(tweet.next, data.id_str);
-      newTweet(tweet.english, data.id_str);
+
+      // Delay English tweets slightly so that Twitter creates a single thread for all of the Hebrew
+      setTimeout(() => {
+        newTweet(tweet.english, data.id_str);
+      }, 2000);
     });
   };
 
@@ -118,7 +127,7 @@ module.exports = function() {
          + " from:parshabot since:" + twoWeeksAgo.toFormat("yyyy-LL-dd")},
         function(error, data, response) {
           if (error) {
-            console.log(error);
+            console.error(error);
           } else if (data.statuses.length > 0) {
             console.log("Already tweeted: " + data.statuses[0].text);
           } else {
